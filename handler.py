@@ -70,7 +70,14 @@ async def run_console():
                 registers[i.left].value = result
                 pc.value += 1  # Increment the PC by 1 byte, 4 bits for each register
                 # print("console", registers)
-                await asyncio.sleep(0)
+            elif i.type == "SubNode":
+                pc.value += 1  # Increment the PC by 1 byte for the instruction
+                left = registers[i.left].value
+                right = registers[i.right].value
+                result = float(left - right)
+                registers[i.left].value = result
+                pc.value += 1  # Increment the PC by 1 byte, 4 bits for each register
+            await asyncio.sleep(0)
 
 
 async def run_window():

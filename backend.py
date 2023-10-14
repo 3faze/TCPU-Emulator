@@ -1,3 +1,14 @@
+#registers = [
+#    "r0",
+#    "r1",
+#    "r2",
+#    "r3",
+#    "b",
+#    "sp",
+#    "pc"
+#]
+
+
 class Register:
     def __init__(self, name, type):
         self.name = name
@@ -5,12 +16,14 @@ class Register:
         self.type = type
 
     def __str__(self):
-        return(self.value)
+        return self.value
 
     def read_val(self):
         return self.value
+
     def write_val(self, value):
         self.value = value
+
 
 class Token:
     def __init__(self, type, value):
@@ -22,6 +35,7 @@ class LexicalToken:
     def __init__(self, token_type, token_value):
         self.token_type = token_type
         self.value = token_value
+
 
 def next_token(src):
     # Current char also keeps track of the length of the current token
@@ -36,7 +50,7 @@ def next_token(src):
 
     # Tells us if a character can be part of an identifier
     def is_ident_character(c, first):
-        #print(c, src[current_char], type(c))
+        # print(c, src[current_char], type(c))
         if first:
             return c.isalpha() or c == "_"
         else:
@@ -148,6 +162,7 @@ def next_token(src):
 
         return "IDENT", current_char
 
+
 def tokenize(src):
     to_skip = ["COMMENT", "WHITESPACE"]
     current_loc = 0
@@ -156,7 +171,7 @@ def tokenize(src):
     while True:
         token_ty, token_len = next_token(src)
         token_start = current_loc
-        #val = src[token_start:token_start+token_len]
+        # val = src[token_start:token_start+token_len]
         current_loc += token_len
 
         val = src[:token_len]
@@ -172,33 +187,52 @@ class AddNode:
         self.right = None
         self.type = "AddNode"
 
+
+class SubNode:
+    def __init__(self):
+        self.left = None
+        self.right = None
+        self.type = "SubNode"
+
+
 class InstructionParser:
     def __init__(self):
         self.src = None
         self.curr_token = None
         self.last_add = None
+        self.last_sub = None
 
     def parse(self, src):
         nodes = []
         self.src = src
         for token in src:
-            #print(token)
+            # print(token)
             if token[0] == "IDENT":
                 if token[3] == "add":
                     self.last_add = AddNode()
+                elif token[3] == "sub":
+                    self.last_sub = SubNode()
                 else:
-                    if self.last_add != None:
-                        if self.last_add.left == None:
+                    if self.last_add is not None:
+                        if self.last_add.left is None:
                             self.last_add.left = token[3]
-                        elif self.last_add.left != None:
-                            if self.last_add.right == None:
+                        elif self.last_add.left is not None:
+                            if self.last_add.right is None:
                                 self.last_add.right = token[3]
-                                #print(self.last_add.left, self.last_add.right)
+                                # print(self.last_add.left, self.last_add.right)
                                 nodes.append(self.last_add)
                                 self.last_add = None
+                    elif self.last_sub is not None:
+                        if self.last_sub.left is None:
+                            self.last_sub.left = token[3]
+                        elif self.last_sub.left is not None:
+                            if self.last_sub.right is None:
+                                self.last_sub.right = token[3]
+                                nodes.append(self.last_sub)
+                                self.last_sub = None
+
             if token[0] == "NL":
-                if self.last_add != None:
+                if self.last_add is not None:
                     self.last_add = None
             if token[0] == "EOF":
                 return nodes
-
